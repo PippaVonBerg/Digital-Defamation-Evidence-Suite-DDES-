@@ -1,0 +1,180 @@
+import hashlib
+import datetime
+import json
+import os
+
+# ---------------------------
+# Digital Defamation Evidence Suite (DDES)
+# Author: [Your Name]
+# Purpose: Identify, fingerprint, quantify damage, and generate court-ready reports for online defamation cases.
+# ---------------------------
+
+# ---------------------------
+# Utility Functions
+# ---------------------------
+
+def trace_origin(source_url):
+    """
+    Simulates tracing the origin of defamatory content.
+    Args:
+        source_url (str): The URL or source identifier of the defamatory content.
+    Returns:
+        dict: Metadata about the content origin.
+    """
+    print("[INFO] Tracing origin of content...")
+    origin_metadata = {
+        "source_url": source_url,
+        "traced_ip": "192.168.1.100",  # Placeholder IP
+        "server_location": "London, UK",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "content_id": hashlib.sha256(source_url.encode()).hexdigest()
+    }
+    return origin_metadata
+
+
+def fingerprint_content(content_metadata):
+    """
+    Generates a digital fingerprint for content integrity verification.
+    Args:
+        content_metadata (dict): Metadata from trace_origin.
+    Returns:
+        str: Unique fingerprint hash.
+    """
+    print("[INFO] Generating digital fingerprint...")
+    fingerprint_base = f"{content_metadata['source_url']}{content_metadata['timestamp']}"
+    fingerprint = hashlib.sha256(fingerprint_base.encode()).hexdigest()
+    return fingerprint
+
+
+def calculate_damage(financial_losses):
+    """
+    Calculates the total financial damage caused by defamatory content.
+    Args:
+        financial_losses (list): List of financial losses in GBP (£).
+    Returns:
+        float: Total estimated damages.
+    """
+    print("[INFO] Calculating financial damages...")
+    if not financial_losses:
+        return 0.0
+    total_damage = sum(financial_losses)
+    additional_penalty = total_damage * 0.15  # Arbitrary penalty percentage
+    return round(total_damage + additional_penalty, 2)
+
+
+def log_offender(username, fingerprint, violation_type="Defamation"):
+    """
+    Logs offender details into a structured JSON file.
+    Args:
+        username (str): Offender's username or identifier.
+        fingerprint (str): Content fingerprint.
+        violation_type (str): Type of violation.
+    Returns:
+        bool: True if successfully logged.
+    """
+    print("[INFO] Logging offender information...")
+    offender_data = {
+        "username": username,
+        "fingerprint": fingerprint,
+        "violation_type": violation_type,
+        "log_timestamp": datetime.datetime.now().isoformat()
+    }
+    
+    log_file = "offender_logs.json"
+    if not os.path.exists(log_file):
+        with open(log_file, 'w') as file:
+            json.dump([], file)
+    
+    with open(log_file, 'r+') as file:
+        logs = json.load(file)
+        logs.append(offender_data)
+        file.seek(0)
+        json.dump(logs, file, indent=4)
+    
+    return True
+
+
+def generate_report(origin_data, fingerprint, damages, offender_username):
+    """
+    Generates a structured report consolidating findings.
+    Args:
+        origin_data (dict): Traced origin metadata.
+        fingerprint (str): Digital fingerprint.
+        damages (float): Calculated financial damages.
+        offender_username (str): Offender's username.
+    Returns:
+        str: Path to the generated report.
+    """
+    print("[INFO] Generating final court-ready report...")
+    report_data = {
+        "report_generated": datetime.datetime.now().isoformat(),
+        "origin_data": origin_data,
+        "fingerprint": fingerprint,
+        "estimated_damages": f"£{damages}",
+        "offender_username": offender_username
+    }
+    
+    report_path = "court_ready_report.json"
+    with open(report_path, 'w') as file:
+        json.dump(report_data, file, indent=4)
+    
+    return report_path
+
+
+def validate_data(source_url, username, financial_losses):
+    """
+    Validates input data before processing.
+    Args:
+        source_url (str): Content URL.
+        username (str): Offender username.
+        financial_losses (list): List of financial loss values.
+    Returns:
+        bool: True if data is valid.
+    """
+    print("[INFO] Validating input data...")
+    if not source_url.startswith("http"):
+        raise ValueError("Invalid source URL. Must start with 'http'.")
+    if not username:
+        raise ValueError("Username cannot be empty.")
+    if not all(isinstance(x, (int, float)) for x in financial_losses):
+        raise ValueError("Financial losses must be a list of numbers.")
+    return True
+
+# ---------------------------
+# Main Workflow
+# ---------------------------
+
+def main():
+    try:
+        # Step 1: Trace origin of defamatory content
+        source = "https://example.com/defamatory-post"
+        validate_data(source, "offender_user", [1500, 3200, 2100])
+        origin_data = trace_origin(source)
+        print("Origin traced successfully:", origin_data)
+
+        # Step 2: Generate fingerprint for content
+        fingerprint = fingerprint_content(origin_data)
+        print("Content fingerprint generated:", fingerprint)
+
+        # Step 3: Calculate financial damages
+        financial_data = [1500, 3200, 2100]  # Example financial impacts
+        estimated_damages = calculate_damage(financial_data)
+        print(f"Estimated Financial Damages: £{estimated_damages}")
+
+        # Step 4: Log offender's information
+        username = "offender_user"
+        if log_offender(username, fingerprint):
+            print(f"Offender '{username}' logged successfully.")
+
+        # Step 5: Generate final report
+        report_path = generate_report(origin_data, fingerprint, estimated_damages, username)
+        print(f"Court-ready report generated: {report_path}")
+
+    except ValueError as e:
+        print(f"[ERROR] Validation failed: {e}")
+    except Exception as e:
+        print(f"[ERROR] An unexpected error occurred: {e}")
+
+
+if __name__ == "__main__":
+    main()
